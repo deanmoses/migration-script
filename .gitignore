@@ -1,0 +1,47 @@
+# Users Environment Variables
+.lock-wscript
+
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+
+# Installed Node.js modules
+node_modules/
+
+# Target build directory for processed, compiled web app
+dist/
+
+# Temporary stuff
+test/temp
+.tmp
+
+# SASS intermediate compile files
+*.scssc
+
+# SASS cache directory
+.sass-cache
+
+# bower package installation dir
+app/bower_components
+test/bower_components
+
+# compiled JST templates
+app/templates/templates.js
+
+# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# temporary editor save files
+*~
+
+# OSX thumnail caches
+.DS_Store
+
+# log files
+*.log
+logs
+
+# JetBrains editor dir
+.idea/
+
+# Compiled React JS templates
+app/scripts/components/*.js
