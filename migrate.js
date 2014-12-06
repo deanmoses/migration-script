@@ -63,12 +63,8 @@ eachPhotoInYear(year, function(photo) {
 		//	//console.log('     from: %s', photo.sourceFile());
 		//	//console.log('       to: %s', photo.targetFile());
 		//}
-		var xmpData = [];
-		xmpData.push({name: 'dc:title', value: photo.title()});
-		xmpData.push({name: 'dc:description', value: photo.description()});
-		xmpData.push({name: 'exif:DateTimeOriginal', value: photo.exifDate()});
-		var xmp = Xmp.toXmp(xmpData);
-		console.log('xmp: ', xmp);
+		var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
+		console.log('xmp: \n', xmp);
 	}
 
 	//FileUtils.copyFile();

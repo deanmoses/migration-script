@@ -2,22 +2,64 @@
 
 var Xmp = {};
 
-Xmp.toXmp = function(elements){
-    if (!elements) throw 'elements cannot be empty';
-    if (!(elements instanceof Array)) throw 'elements must be array';
+/**
+ * Return a string representing an image's XMP sidecar file
+ *
+ * @param title
+ * @param description
+ * @param date '2014-12-31'
+ */
+Xmp.imageXmp = function(title, description, date) {
+    var xmp = Xmp.xmpTagOpen;
+    xmp += Xmp.rdfTagOpen;
+    if (!!title || !!description) {
+        xmp += Xmp.dcContainerTagOpen;
+        if (title) {
+            xmp += Xmp.dcTitle(title);
+        }
 
-    var xmp = '<x:xmpmeta>\n';
-    var arrayLength = elements.length;
-    for (var i = 0; i < arrayLength; i++) {
-        var element = elements[i];
-        if (!element.name) throw 'element ' + i + ' does not have a name';
-        if (!element.value) throw 'element ' + i + ' does not have a value';
-
-        var tag = '\t<' + element.name + '>' + element.value + '</' + element.name + '>\n'
-        xmp += tag;
+        if (description) {
+            xmp += Xmp.dcDescription(description);
+        }
+        xmp += Xmp.dcContainerTagClose;
     }
-    xmp += '</x:xmpmeta>';
+    if (date) {
+        xmp += Xmp.exifContainerTagOpen;
+        xmp += Xmp.exifDate(date);
+        xmp += Xmp.exifContainerTagClose;
+    }
+    xmp += Xmp.rdfTagClose;
+    xmp += Xmp.xmpTagClose;
+
     return xmp;
 };
+
+Xmp.dcTitle = function(title) {
+    return Xmp.tag('dc:title', title);
+};
+
+Xmp.dcDescription = function(description) {
+    return Xmp.cdataTag('dc:description', description);
+};
+
+Xmp.exifDate = function(date) {
+    return Xmp.tag('exif:DateTimeOriginal', date);
+};
+Xmp.cdataTag = function(tagname, value) {
+    return '\n\t\t\t<' + tagname + '><![CDATA[' + value + ']]></' + tagname + '>';
+};
+
+Xmp.tag = function(tagname, value) {
+    return '\n\t\t\t<' + tagname + '>' + value + '</' + tagname + '>';
+};
+
+Xmp.xmpTagOpen = '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 4.2-c020 1.124078, Tue Sep 11 2007 23:21:40">';
+Xmp.xmpTagClose = '\n</x:xmpmeta>';
+Xmp.rdfTagOpen = '\n\t<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">';
+Xmp.rdfTagClose = '\n\t</rdf:RDF>';
+Xmp.dcContainerTagOpen = '\n\t\t<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">';
+Xmp.dcContainerTagClose = '\n\t\t</rdf:Description>';
+Xmp.exifContainerTagOpen = '\n\t\t<rdf:Description rdf:about="" xmlns:exif="http://ns.adobe.com/exif/1.0/">';
+Xmp.exifContainerTagClose = '\n\t\t</rdf:Description>';
 
 module.exports = Xmp;
