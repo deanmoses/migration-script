@@ -1,41 +1,76 @@
 #!/usr/bin/env node
 
-var fs = require('fs');
-var PathUtils = require('path');
+var Config = require('./scripts/config.js');
+var StringUtils = require('./scripts/stringutils.js');
 var FileUtils = require('./scripts/fileutils.js');
-var yearDirBase = '/Volumes/MoBucket/Users/Dean\ Moses/Pictures/raw';
-var dataDirBase = '/Users/moses/devgit/tacocat-gallery-data';
+var Album = require('./scripts/album.js');
+var Xmp = require('./scripts/xmp.js');
+
 var year = '2003';
 
-function getAlbum(year, month, week) {
-	var albumPath = PathUtils.join(dataDirBase, year, month + '-' + week, 'album.json');
-	return JSON.parse(fs.readFileSync(albumPath, 'utf8'));
-}
-
+/**
+ * Find each photo in the year and pass it to the callback function
+ */
 function eachPhotoInYear(year, callback) {
 	// for each month
-	FileUtils.getSubDirs(yearDirBase + '/' + year).forEach(function(month) {
-		// for each week
-		FileUtils.getSubDirs(yearDirBase + '/' + year + '/' + month).forEach(function(week) {
-			var album = getAlbum(year, month, week); // JSON album on disk
+	FileUtils.getSubDirs(Config.yearDirBase + '/' + year).forEach(function(month) {
+		if (!FileUtils.isValidMonth(month)) {
+			console.log('weird month: %s/%s', year, month);
+		}
 
+		// for each week
+		FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month).forEach(function(week) {
+			var album = new Album(year, month, week); // JSON album on disk
 			// for each photo in week
-			FileUtils.getFiles(yearDirBase + '/' + year + '/' + month + '/' + week).forEach(function(photo) {
-				var photoName = photo.split('.');
-				photoName.pop();
-				photoName = photoName.join('.');
-				var photoEntry = album.children[photoName];
-				var description = '';
-				if (photoEntry) {
-					description = photoEntry.description;
-				}
-				callback(month, week, photo, description);
+			FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + week).forEach(function(photoName) {
+				callback(album.getPhoto(photoName));
 			});
 		});
 	});
-
 }
 
-eachPhotoInYear(year, function(month, week, photo, description) {
-	console.log('photo: ', month, week, photo, description);
+/**
+ * Process each photo in the year
+ */
+eachPhotoInYear(year, function(photo) {
+	if (!photo.isKnownImageType()) {
+		console.log('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
+	}
+	else if (photo.noJsonData()) {
+		console.log('skip (no json): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+
+		//if (photo.noTextDescription() && photo.description() !== photo.textDescription) {
+		//	//console.log('descriptions differ: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
+		//	//console.log('   json: %s', photo.description);
+		//	//console.log('    txt: %s', photo.textDescription);
+		//}
+	}
+	// It's a jpg or bmp, with JSON data
+	// It's valid to be transferred
+	else {
+		console.log('transfer: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+		console.log('    from: %s', photo.sourceFile());
+		console.log('      to: %s', photo.targetFile());
+
+		//if (photo.isBmp()) {
+		//	//console.log('    isBmp');
+		//}
+		//else if (StringUtils.endsWith(photo.filename, '.JPG')) {
+		//	//console.log('     from: %s', photo.sourceFile());
+		//	//console.log('       to: %s', photo.targetFile());
+		//}
+		//else if (StringUtils.endsWithIgnoreCase(photo.filename, '.jpeg')) {
+		//	//console.log('     from: %s', photo.sourceFile());
+		//	//console.log('       to: %s', photo.targetFile());
+		//}
+		var xmpData = [];
+		xmpData.push({name: 'dc:title', value: photo.title()});
+		xmpData.push({name: 'dc:description', value: photo.description()});
+		xmpData.push({name: 'exif:DateTimeOriginal', value: photo.exifDate()});
+		var xmp = Xmp.toXmp(xmpData);
+		console.log('xmp: ', xmp);
+	}
+
+	//FileUtils.copyFile();
+	process.exit();
 });
