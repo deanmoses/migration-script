@@ -6,6 +6,8 @@
 
 var Config = require('./config.js');
 var StringUtils = require('./stringutils.js');
+var moment = require('moment');
+var fs = require('fs');
 
 /**
  * Create a new Photo object over a pack of passed-in data
@@ -34,7 +36,8 @@ Photo.prototype.description = function() {
  * For use in <exif:DateTimeOriginal>2001-11-23</exif:DateTimeOriginal>
  */
 Photo.prototype.exifDate = function() {
-    return this.year + '-' + this.month + '-' + this.day;
+    return moment(this.date()).format('YYYY-MM-DD');
+    //return this.year + '-' + this.month + '-' + this.day;
 };
 
 Photo.prototype.isKnownImageType = function() {
@@ -83,6 +86,10 @@ Photo.prototype.targetDir = function() {
 Photo.prototype.sourceDir = function() {
     return Config.yearDirBase  + '/' + this.year + '/' + this.month + '/' + this.day;
 };
+
+Photo.prototype.date = function() {
+    return fs.statSync(this.sourceFile()).ctime;
+}
 
 /**
  * True if there is no .txt file with this photo's description

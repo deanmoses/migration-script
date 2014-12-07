@@ -85,11 +85,17 @@ function processPhoto(photo) {
 		console.log('xmp file: %s', photo.xmpFile());
 		FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp);
 
-		//FileUtils.copyFile();
+		// copy the actual image over
+		FileUtils.copyFile(photo.sourceFile(), photo.targetDir(), photo.targetFilename());
 	}
 
-	process.exit();
+	numProcessed = numProcessed + 1;
+	if (numProcessed >= 9) {
+		process.exit();
+	}
 }
+
+var numProcessed = 0;
 
 /**
  * Process each photo in the year

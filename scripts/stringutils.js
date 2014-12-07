@@ -27,5 +27,12 @@ StringUtils.stripExtension = function(filename) {
     return noExt;
 };
 
+StringUtils.encodeHtml = function(regularHtml) {
+    return regularHtml.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+};
 
 module.exports = StringUtils;

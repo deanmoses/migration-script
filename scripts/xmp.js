@@ -1,5 +1,7 @@
 'use strict';
 
+var StringUtils = require('./stringutils.js');
+
 var Xmp = {};
 
 /**
@@ -73,7 +75,7 @@ Xmp.dcTitle = function(title) {
 };
 
 Xmp.dcDescription = function(description) {
-    return Xmp.cdataTag('dc:description', description);
+    return Xmp.tag('dc:description', description);
 };
 
 Xmp.exifDate = function(date) {
@@ -84,12 +86,8 @@ Xmp.customData = function(summary) {
     return Xmp.tag('zp:CustomData', summary);
 }
 
-Xmp.cdataTag = function(tagname, value) {
-    return '\n\t\t\t<' + tagname + '><![CDATA[' + value + ']]></' + tagname + '>';
-};
-
 Xmp.tag = function(tagname, value) {
-    return '\n\t\t\t<' + tagname + '>' + value + '</' + tagname + '>';
+    return '\n\t\t\t<' + tagname + '>' + StringUtils.encodeHtml(value) + '</' + tagname + '>';
 };
 
 Xmp.xmpTagOpen = '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 4.2-c020 1.124078, Tue Sep 11 2007 23:21:40">';
