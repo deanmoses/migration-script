@@ -72,28 +72,26 @@ FileUtils.getFiles = function getFiles(srcpath) {
 
 /**
  * Copy a file from source location to target.
- *
- * @param source
- * @param target
- * @param cb callback function
  */
 FileUtils.copyFile = function(source, targetDir, targetFilename) {
     var target = targetDir + '/' + targetFilename;
-
     if (fs.existsSync(target)) {
         return;
     }
-
     mkdirp.sync(targetDir);
-
     fs.writeFileSync(target, fs.readFileSync(source));
+    console.log('\tcopied %s', target);
 };
 
+/**
+ * Create file with specified contents.
+ */
 FileUtils.writeFile = function(dir, filename, contents) {
     var path = dir + '/' + filename;
     if (!fs.existsSync(path)) {
         mkdirp.sync(dir);
         fs.writeFileSync(path, contents);
+        console.log('\twrote %s', path);
     }
 };
 
