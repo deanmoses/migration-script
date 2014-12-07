@@ -34,6 +34,40 @@ Xmp.imageXmp = function(title, description, date) {
     return xmp;
 };
 
+/**
+ * Return a string representing an album's XMP sidecar file
+ *
+ * @param date '2014-12-31'
+ */
+Xmp.albumXmp = function(title, description, summary, date) {
+    var xmp = Xmp.xmpTagOpen;
+    xmp += Xmp.rdfTagOpen;
+    if (!!title || !!description) {
+        xmp += Xmp.dcContainerTagOpen;
+        if (title) {
+            xmp += Xmp.dcTitle(title);
+        }
+
+        if (description) {
+            xmp += Xmp.dcDescription(description);
+        }
+        xmp += Xmp.dcContainerTagClose;
+    }
+    if (date) {
+        xmp += Xmp.exifContainerTagOpen;
+        xmp += Xmp.exifDate(date);
+        xmp += Xmp.exifContainerTagClose;
+    }
+    xmp += Xmp.rdfTagClose;
+    if (summary) {
+        xmp += Xmp.customData(summary);
+    }
+    xmp += Xmp.xmpTagClose;
+
+    return xmp;
+};
+
+
 Xmp.dcTitle = function(title) {
     return Xmp.tag('dc:title', title);
 };
@@ -45,6 +79,11 @@ Xmp.dcDescription = function(description) {
 Xmp.exifDate = function(date) {
     return Xmp.tag('exif:DateTimeOriginal', date);
 };
+
+Xmp.customData = function(summary) {
+    return Xmp.tag('zp:CustomData', summary);
+}
+
 Xmp.cdataTag = function(tagname, value) {
     return '\n\t\t\t<' + tagname + '><![CDATA[' + value + ']]></' + tagname + '>';
 };

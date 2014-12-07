@@ -56,12 +56,32 @@ Photo.prototype.targetFilename = function() {
     return this.filename.toLowerCase();
 };
 
-Photo.prototype.sourceFile = function() {
-    return Config.yearDirBase  + '/' + this.year + '/' + this.month + '/' + this.day  + '/' +  this.filename;
+Photo.prototype.fileNoExt = function() {
+    return StringUtils.stripExtension(this.filename);
+};
+
+Photo.prototype.xmpFilename = function() {
+    return this.fileNoExt() + '.xmp';
+};
+
+Photo.prototype.xmpFile = function() {
+    return this.targetDir()  + '/' +  this.xmpFilename();
 };
 
 Photo.prototype.targetFile = function() {
-    return Config.targetDirBase + '/' + this.year + '/' + this.month + '-' + this.day  + '/' +  this.targetFilename();
+    return this.targetDir()  + '/' +  this.targetFilename();
+};
+
+Photo.prototype.sourceFile = function() {
+    return this.sourceDir()  + '/' +  this.filename;
+};
+
+Photo.prototype.targetDir = function() {
+    return Config.targetDirBase + '/' + this.year + '/' + this.month + '-' + this.day;
+};
+
+Photo.prototype.sourceDir = function() {
+    return Config.yearDirBase  + '/' + this.year + '/' + this.month + '/' + this.day;
 };
 
 /**

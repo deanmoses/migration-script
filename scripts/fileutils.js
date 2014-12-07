@@ -4,6 +4,7 @@
 'use strict';
 
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var StringUtils = require('./stringutils.js');
 
 var FileUtils = {};
@@ -97,6 +98,14 @@ FileUtils.copyFile = function(source, target, cb) {
             cb(err);
             cbCalled = true;
         }
+    }
+};
+
+FileUtils.writeFile = function(dir, filename, contents) {
+    var path = dir + '/' + filename;
+    if (!fs.existsSync(path)) {
+        mkdirp.sync(dir);
+        fs.writeFileSync(path, contents);
     }
 };
 

@@ -11,7 +11,7 @@ var year = '2003';
 /**
  * Find each photo in the year and pass it to the callback function
  */
-function eachPhotoInYear(year, callback) {
+function walkYear(year, albumCallback, photoCallback) {
 	// for each month
 	FileUtils.getSubDirs(Config.yearDirBase + '/' + year).forEach(function(month) {
 		if (!FileUtils.isValidMonth(month)) {
@@ -20,53 +20,78 @@ function eachPhotoInYear(year, callback) {
 
 		// for each week
 		FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month).forEach(function(week) {
-			var album = new Album(year, month, week); // JSON album on disk
+			var album = new Album(year, month, week);
+			albumCallback(album);
+
 			// for each photo in week
 			FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + week).forEach(function(photoName) {
-				callback(album.getPhoto(photoName));
+				photoCallback(album.getPhoto(photoName));
 			});
 		});
 	});
 }
 
+
 /**
- * Process each photo in the year
+ * Process a single album
+ * @param album Album object
  */
-eachPhotoInYear(year, function(photo) {
+function processAlbum(album) {
+	if (!album) {
+		throw 'null album';
+	}
+
+	console.log('album: %s %s', album.year, album.title());
+	//console.log('    dir: %s', album.targetDir());
+	//console.log('    xmp: %s', album.xmpFile());
+
+	if (album.summary()) {
+		console.log('       summary: %s', album.summary());
+	}
+	if (album.description()) {
+		//console.log('   description: %s', album.description());
+	}
+
+	var xmp = Xmp.albumXmp(album.title(), album.description(), album.summary(), album.exifDate());
+	//console.log('xmp: \n%s', xmp);
+	console.log('xmp file: \n%s', album.xmpFile());
+	FileUtils.writeFile(album.targetYearDir(), album.xmpFilename(), xmp);
+}
+
+/**
+ * Process a single photo
+ * @param photo Photo object
+ */
+function processPhoto(photo) {
+	if (!photo) {
+		throw 'null photo';
+	}
+
 	if (!photo.isKnownImageType()) {
 		console.log('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
 	}
 	else if (photo.noJsonData()) {
 		console.log('skip (no json): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
-
-		//if (photo.noTextDescription() && photo.description() !== photo.textDescription) {
-		//	//console.log('descriptions differ: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
-		//	//console.log('   json: %s', photo.description);
-		//	//console.log('    txt: %s', photo.textDescription);
-		//}
 	}
 	// It's a jpg or bmp, with JSON data
 	// It's valid to be transferred
 	else {
-		console.log('transfer: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
-		console.log('    from: %s', photo.sourceFile());
-		console.log('      to: %s', photo.targetFile());
+		//console.log('transfer: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+		//console.log('    from: %s', photo.sourceFile());
+		//console.log('      to: %s', photo.targetFile());
 
-		//if (photo.isBmp()) {
-		//	//console.log('    isBmp');
-		//}
-		//else if (StringUtils.endsWith(photo.filename, '.JPG')) {
-		//	//console.log('     from: %s', photo.sourceFile());
-		//	//console.log('       to: %s', photo.targetFile());
-		//}
-		//else if (StringUtils.endsWithIgnoreCase(photo.filename, '.jpeg')) {
-		//	//console.log('     from: %s', photo.sourceFile());
-		//	//console.log('       to: %s', photo.targetFile());
-		//}
 		var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
-		console.log('xmp: \n', xmp);
+		//console.log('xmp: \n', xmp);
+		console.log('xmp file: %s', photo.xmpFile());
+		FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp);
+
+		//FileUtils.copyFile();
 	}
 
-	//FileUtils.copyFile();
 	process.exit();
-});
+}
+
+/**
+ * Process each photo in the year
+ */
+walkYear(year, processAlbum, processPhoto);

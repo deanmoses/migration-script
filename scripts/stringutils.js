@@ -17,4 +17,15 @@ StringUtils.endsWithIgnoreCase = function(str, suffix) {
     return str.toLowerCase().indexOf(suffix.toLowerCase(), str.length - suffix.length) !== -1;
 };
 
+StringUtils.stripExtension = function(filename) {
+    var noExt = filename;
+    if (noExt.indexOf('.')) {
+        noExt = noExt.split('.');
+        noExt.pop();
+        noExt = noExt.join('.');
+    }
+    return noExt;
+};
+
+
 module.exports = StringUtils;

@@ -6,6 +6,7 @@
 var fs = require('fs');
 var Config = require('./config.js');
 var Photo = require('./photo.js');
+var StringUtils = require('./stringutils.js');
 
 /**
  * Create a new Album object over a JSON data file on disk.
@@ -35,11 +36,47 @@ function Album(year, month, day) {
     }
 }
 
+Album.prototype.exifDate = function() {
+    return this.year + '-' + this.month + '-' + this.day;
+};
+
 /**
  * True if there was an entry in the JSON file for this photo
  */
 Album.prototype.hasData = function() {
     return !!this.data;
+};
+
+Album.prototype.title = function() {
+    return this.get('title');
+};
+
+Album.prototype.description = function() {
+    return this.get('description');
+};
+
+Album.prototype.summary = function() {
+    return this.get('summary');
+};
+
+Album.prototype.xmpFilename = function() {
+    return this.targetDirName() + '.xmp';
+};
+
+Album.prototype.xmpFile = function() {
+    return this.targetYearDir() + '/' + this.xmpFilename();
+};
+
+Album.prototype.targetDir = function() {
+    return this.targetYearDir() + '/' + this.targetDirName();
+};
+
+Album.prototype.targetDirName = function() {
+    return this.month + '-' + this.day;
+};
+
+Album.prototype.targetYearDir = function() {
+    return Config.targetDirBase + '/' + this.year;
 };
 
 /**
@@ -70,13 +107,7 @@ Album.prototype.getPhotoJsonData = function(filename) {
     // attempt to retrieve info about the photo from the JSON album
     var photoData;
     if (this.data) {
-        // get rid of extension if one was passed in
-        var photoName = filename;
-        if (photoName.indexOf('.')) {
-            photoName = photoName.split('.');
-            photoName.pop();
-            photoName = photoName.join('.');
-        }
+        var photoName = StringUtils.stripExtension(filename);
         photoData = this.data.children[photoName];
     }
     return photoData;
@@ -111,5 +142,11 @@ Album.prototype.getPhotoFileDescription = function(filename) {
     return description;
 };
 
+/**
+ * Get a property from the JSON data object
+ */
+Album.prototype.get = function(propertyName) {
+    return (!!this.data) ? this.data[propertyName] : null;
+};
 
 module.exports = Album;
