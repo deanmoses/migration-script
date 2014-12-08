@@ -130,9 +130,6 @@ Album.prototype.getPhotoFileDescription = function(filename) {
     var description;
     try {
         description = fs.readFileSync(photoDescriptionFilePath, {encoding: 'utf8'});
-        if (!description) {
-            debugger;
-        }
     } catch(e) {
         // if it's a file not found error
         if (e.code === 'ENOENT') {

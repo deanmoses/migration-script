@@ -2,11 +2,14 @@
 
 var Walk = require('./scripts/walk.js');
 
-var write = true; // false: don't write files, just log what you WOULD do if you ran it
-var year = '2003';
-var month = '07';
-var day = '30';
+var options = {
+	write: true, // false: don't write files, just log what you WOULD do if you ran it
+	logSuccesses: true // false: don't log successful files.  good for looking at only the failures / weird files
+};
+var year = '2006';
+var month = '11';
+var day = '10';
 
-//Walk.day(year, month, day, write);
-
-Walk.month(year, month, write);
+Walk.year(year, options);
+//Walk.month(year, month, options);
+//Walk.day(year, month, day, options);

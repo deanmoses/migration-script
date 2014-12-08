@@ -8,74 +8,92 @@ var Xmp = require('./xmp.js');
 var Walk = {};
 
 Walk.numProcessed = 0;
-Walk.maxToProcess = 200;
+Walk.maxToProcess = 2000;
 
 /**
  * Find each album and photo in the year and pass it to the callback functions.
  */
-Walk.year = function(year, write) {
+Walk.year = function(year, options) {
+    if (!year) throw 'no year';
+    if (!options) throw 'no options';
+
     // for each month
     FileUtils.getSubDirs(Config.yearDirBase + '/' + year).forEach(function(month) {
-        Walk.month(year, month, write);
+        Walk.month(year, month, options);
     });
 };
 
 /**
  * Walk a month's worth of albums and call back the creation functions.
  */
-Walk.month = function(year, month, write) {
-    if (!FileUtils.isValidMonth(month)) {
-        throw 'weird month: ' + year + '/' + month;
-    }
+Walk.month = function(year, month, options) {
+    if (!year) throw 'no year';
+    if (!month) throw 'no month';
+    if (!options) throw 'no options';
 
-    // for each week
-    FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month).forEach(function(day) {
-        Walk.day(year, month, day, write);
-    });
+    if (!FileUtils.isValidMonth(month)) {
+        console.log('skip weird month: ' + year + '/' + month);
+    }
+    else {
+        // for each week
+        FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month).forEach(function (day) {
+            Walk.day(year, month, day, options);
+        });
+    }
 };
 
 /**
  * Walk an individual album and call back the creation functions
  */
-Walk.day = function(year, month, day, write) {
-    var album = new Album(year, month, day);
-    Walk.processAlbum(album, write);
+Walk.day = function(year, month, day, options) {
+    if (!year) throw 'no year';
+    if (!month) throw 'no month';
+    if (!day) throw 'no day';
+    if (!options) throw 'no options';
 
-    // for each photo in week
-    FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + day).forEach(function(photoName) {
-        Walk.processPhoto(album.getPhoto(photoName), write);
-    });
+    if (!FileUtils.isValidMonth(month)) {
+        console.log('skip weird month: ' + year + '/' + month);
+    }
+    else if (!FileUtils.isValidDay(day)) {
+        console.log('skip weird day: ' + year + '/' + month + '/' + day);
+    }
+    else {
+        var album = new Album(year, month, day);
+        Walk.processAlbum(album, options);
+
+        // for each photo in week
+        FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + day).forEach(function (photoName) {
+            Walk.processPhoto(album.getPhoto(photoName), options);
+        });
+    }
 };
 
 /**
  * Process a single album
- * @param album Album object
- * @param write
  */
-Walk.processAlbum = function(album, write) {
-    if (!album) {
-        throw 'null album';
-    }
+Walk.processAlbum = function(album, options) {
+    if (!album) throw 'null album';
+    if (!options) throw 'no options';
 
-    console.log('processing: %s/%s/%s', album.year, album.month, album.day);
+    if (options.logSuccesses) {
+        console.log('processing: %s/%s/%s', album.year, album.month, album.day);
+    }
 
     var xmp = Xmp.albumXmp(album.title(), album.description(), album.summary(), album.exifDate());
-    if (write) {
+    if (options.write) {
         FileUtils.writeFile(album.targetYearDir(), album.xmpFilename(), xmp);
     }
-    else {
+    else if (options.logSuccesses) {
         console.log('Would have written album: %s/%s-%s', album.year, album.month, album.day);
     }
 };
 
 /**
  * Process a single photo
- * @param photo Photo object
  */
-Walk.processPhoto = function(photo, write) {
-    if (!photo) {
-        throw 'null photo';
-    }
+Walk.processPhoto = function(photo, options) {
+    if (!photo) throw 'no photo';
+    if (!options) throw 'no options';
 
     if (!photo.isKnownImageType()) {
         console.log('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
@@ -86,16 +104,17 @@ Walk.processPhoto = function(photo, write) {
     // It's a jpg or bmp, with JSON data
     // It's valid to be transferred
     else {
-        console.log('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
-
+        if (options.logSuccesses) {
+            console.log('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
+        }
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
-        if (write) {
+        if (options.write) {
             FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp);
 
             // copy the actual image over
             FileUtils.copyFile(photo.sourceFile(), photo.targetDir(), photo.targetFilename());
         }
-        else {
+        else if (options.logSuccesses) {
             console.log('Would have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
         }
     }
