@@ -1,0 +1,22 @@
+{
+  "name": "tacocat-gallery-migration-script",
+  "version": "0.9.0",
+  "description": "Node.js script to migrate the tacocat.com photo gallery albums to Zenphoto",
+  "main": "migrate.js",
+  "dependencies": {
+    "filewalker": "^0.1.2",
+    "mkdirp": "^0.5.0",
+    "moment": "^2.8.4"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deanmoses/migration-script.git"
+  },
+  "author": "Dean Moses (deanmoses)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deanmoses/migration-script/issues"
+  },
+  "homepage": "https://github.com/deanmoses/migration-script"
+}

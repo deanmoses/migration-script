@@ -37,7 +37,6 @@ Photo.prototype.description = function() {
  */
 Photo.prototype.exifDate = function() {
     return moment(this.date()).format('YYYY-MM-DD');
-    //return this.year + '-' + this.month + '-' + this.day;
 };
 
 Photo.prototype.isKnownImageType = function() {
