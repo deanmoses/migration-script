@@ -2,7 +2,6 @@
 
 var Config = require('./config.js');
 var FileUtils = require('./fileutils.js');
-var Album = require('./album.js');
 var AlbumStore = require('./albumstore.js');
 var Xmp = require('./xmp.js');
 
