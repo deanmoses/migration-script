@@ -3,12 +3,13 @@
 var Config = require('./config.js');
 var FileUtils = require('./fileutils.js');
 var Album = require('./album.js');
+var AlbumStore = require('./albumstore.js');
 var Xmp = require('./xmp.js');
 
 var Walk = {};
 
 Walk.numProcessed = 0;
-Walk.maxToProcess = 2000;
+Walk.reachedMax = false;
 
 /**
  * Find each album and photo in the year and pass it to the callback functions.
@@ -16,6 +17,7 @@ Walk.maxToProcess = 2000;
 Walk.year = function(year, options) {
     if (!year) throw 'no year';
     if (!options) throw 'no options';
+    if (Walk.reachedMax) return;
 
     // for each month
     FileUtils.getSubDirs(Config.yearDirBase + '/' + year).forEach(function(month) {
@@ -30,6 +32,7 @@ Walk.month = function(year, month, options) {
     if (!year) throw 'no year';
     if (!month) throw 'no month';
     if (!options) throw 'no options';
+    if (Walk.reachedMax) return;
 
     if (!FileUtils.isValidMonth(month)) {
         console.log('skip weird month: ' + year + '/' + month);
@@ -50,6 +53,7 @@ Walk.day = function(year, month, day, options) {
     if (!month) throw 'no month';
     if (!day) throw 'no day';
     if (!options) throw 'no options';
+    if (Walk.reachedMax) return;
 
     if (!FileUtils.isValidMonth(month)) {
         console.log('skip weird month: ' + year + '/' + month);
@@ -58,12 +62,13 @@ Walk.day = function(year, month, day, options) {
         console.log('skip weird day: ' + year + '/' + month + '/' + day);
     }
     else {
-        var album = new Album(year, month, day);
-        Walk.processAlbum(album, options);
+        AlbumStore.get(year, month, day, function(album) {
+            Walk.processAlbum(album, options);
 
-        // for each photo in week
-        FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + day).forEach(function (photoName) {
-            Walk.processPhoto(album.getPhoto(photoName), options);
+            // for each photo in week
+            FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + day).forEach(function (photoName) {
+                Walk.processPhoto(album.getPhoto(photoName), options);
+            });
         });
     }
 };
@@ -74,6 +79,7 @@ Walk.day = function(year, month, day, options) {
 Walk.processAlbum = function(album, options) {
     if (!album) throw 'null album';
     if (!options) throw 'no options';
+    if (Walk.reachedMax) return;
 
     if (options.logSuccesses) {
         console.log('processing: %s/%s/%s', album.year, album.month, album.day);
@@ -94,6 +100,7 @@ Walk.processAlbum = function(album, options) {
 Walk.processPhoto = function(photo, options) {
     if (!photo) throw 'no photo';
     if (!options) throw 'no options';
+    if (Walk.reachedMax) return;
 
     if (!photo.isKnownImageType()) {
         console.log('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
@@ -107,6 +114,7 @@ Walk.processPhoto = function(photo, options) {
         if (options.logSuccesses) {
             console.log('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
         }
+        //console.log('exif date: ', photo.exifDate());
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
         if (options.write) {
             FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp);
@@ -116,12 +124,16 @@ Walk.processPhoto = function(photo, options) {
         }
         else if (options.logSuccesses) {
             console.log('Would have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+            //console.log('\ttarget: %s', photo.targetFile());
+            //console.log('xmp ', xmp);
         }
     }
 
     Walk.numProcessed = Walk.numProcessed + 1;
-    if (Walk.numProcessed >= Walk.maxToProcess) {
-        process.exit();
+	var maxToProcess = options.maxPhotosToProcess ? options.maxPhotosToProcess : 1;
+    if (Walk.numProcessed >= maxToProcess) {
+        Walk.reachedMax = true;
+        console.log('Reached max # photos to process: ' + maxToProcess);
     }
 };
 

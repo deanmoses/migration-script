@@ -4,6 +4,7 @@
 'use strict';
 
 var fs = require('fs');
+var _ = require('underscore');
 var Config = require('./config.js');
 var Photo = require('./photo.js');
 var StringUtils = require('./stringutils.js');
@@ -15,25 +16,12 @@ var StringUtils = require('./stringutils.js');
  * @param month like 12
  * @param day like 31
  */
-function Album(year, month, day) {
+function Album(year, month, day, data) {
     this.year = year;
     this.month = month;
     this.day = day;
-    this.albumPath = Config.jsonDirBase + '/' + year + '/' + month + '-' + day + '/album.json';
-
-    // retrieve data from filesystem, if available
-    try {
-        this.data = JSON.parse(fs.readFileSync(this.albumPath, 'utf8'));
-    } catch(e) {
-        // if it's a file not found error
-        if (e.code === 'ENOENT') {
-            console.log('album has no JSON: %s/%s-%s', year, month, day);
-        }
-        // else I don't know what the error is, rethrow it
-        else {
-            throw e;
-        }
-    }
+    this.data = data;
+	this.isDynamic = year > 2006;
 }
 
 Album.prototype.exifDate = function() {
@@ -107,9 +95,18 @@ Album.prototype.getPhotoJsonData = function(filename) {
     // attempt to retrieve info about the photo from the JSON album
     var photoData;
     if (this.data) {
-        var photoName = StringUtils.stripExtension(filename);
-        photoData = this.data.children[photoName];
+
+        // 2007-2014
+        if (this.isDynamic) {
+            photoData = _.find(this.data.children, function(obj) { return obj.pathComponent == filename })
+        }
+        // 2001-2006
+        else {
+            var photoName = StringUtils.stripExtension(filename);
+            photoData = this.data.children[photoName];
+        }
     }
+
     return photoData;
 };
 

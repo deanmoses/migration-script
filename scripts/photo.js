@@ -19,7 +19,6 @@ function Photo(year, month, day, filename, data, textDescription) {
     this.month = month;
     this.day = day;
     this.filename = filename;
-    //this.timestamp = Math.round(new Date(year, month, day).getTime() / 1000);
     this.data = data;
     this.textDescription = textDescription;
 }
@@ -36,7 +35,9 @@ Photo.prototype.description = function() {
  * For use in <exif:DateTimeOriginal>2001-11-23</exif:DateTimeOriginal>
  */
 Photo.prototype.exifDate = function() {
-    return moment(this.date()).format('YYYY-MM-DD');
+    var d = moment(this.date()).format('YYYY-MM-DD');
+    //console.log('moment: ', d);
+    return d;
 };
 
 Photo.prototype.isKnownImageType = function() {
@@ -87,8 +88,13 @@ Photo.prototype.sourceDir = function() {
 };
 
 Photo.prototype.date = function() {
-    return fs.statSync(this.sourceFile()).ctime;
-}
+    // stat.ctime *should* be creation time, but it's incorrect sometimes,
+    // while mtime is sometimes older and more correct
+    var stat = fs.statSync(this.sourceFile());
+    var time = (stat.mtime < stat.ctime) ? stat.mtime : stat.ctime;
+    //console.log('time: ', time);
+    return time;
+};
 
 /**
  * True if there is no .txt file with this photo's description
