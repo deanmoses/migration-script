@@ -63,17 +63,23 @@ AlbumStore.get = function(year, month, day, options, callback) {
                             throw 'Got no data for album ' + path;
                         }
 
-                        // save to disk
                         var albumData = JSON.parse(body);
-                        albumData = JSON.stringify(albumData, null, 2);
-                        FileUtils.writeFile(Config.jsonDirBase + '/' + path, 'album.json', albumData, options);
 
-                        // read back from disk to verify it wrote correctly
-                        albumData = JSON.parse(fs.readFileSync(albumPath, 'utf8'));
+                        if (options.write) {
+                            // save to disk
+                            albumData = JSON.stringify(albumData, null, 2);
+                            FileUtils.writeFile(Config.jsonDirBase + '/' + path, 'album.json', albumData, options);
+                            // read back from disk to verify it wrote correctly
+                            albumData = JSON.parse(fs.readFileSync(albumPath, 'utf8'));
+                        }
+                        else {
+                            console.log('\tWould have written %s', Config.jsonDirBase + '/' + path, 'album.json');
+                        }
+
                         var album = new Album(year, month, day, albumData);
                         callback(album);
                     });
-                }).bind(options).on('error', function (e) {
+                }.bind(options)).on('error', function (e) {
                     console.log("Got error: " + e.message);
                 });
 
