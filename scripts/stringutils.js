@@ -35,4 +35,23 @@ StringUtils.encodeHtml = function(regularHtml) {
         .replace(/'/g, '&apos;');
 };
 
+/**
+ * Returns true if the HTML contains URLs or other things
+ * that need further processing.
+ */
+StringUtils.containsUrlsAndOtherThingsToFix = function(html) {
+    if (html) {
+        if (html.match(/href/i)) { // <a href>
+            return true;
+        }
+        else if (html.match(/src/i)) { // <img src>
+            return true;
+        }
+        //else if (html.match(/caption/i)) {  // <div class="caption">
+        //    return true;
+        //}
+    }
+    return false;
+};
+
 module.exports = StringUtils;

@@ -2,8 +2,10 @@
 
 var Config = require('./config.js');
 var FileUtils = require('./fileutils.js');
+var StringUtils = require('./stringutils.js');
 var AlbumStore = require('./albumstore.js');
 var Xmp = require('./xmp.js');
+var colors = require('colors');
 
 var Walk = {};
 
@@ -34,7 +36,7 @@ Walk.month = function(year, month, options) {
     if (Walk.reachedMax) return;
 
     if (!FileUtils.isValidMonth(month)) {
-        console.log('skip weird month: ' + year + '/' + month);
+        console.log('WARNING '.red + 'skip weird month: ' + year + '/' + month);
     }
     else {
         // for each week
@@ -55,10 +57,10 @@ Walk.day = function(year, month, day, options) {
     if (Walk.reachedMax) return;
 
     if (!FileUtils.isValidMonth(month)) {
-        console.log('skip weird month: ' + year + '/' + month);
+        console.log('WARNING '.red + 'skip weird month: ' + year + '/' + month);
     }
     else if (!FileUtils.isValidDay(day)) {
-        console.log('skip weird day: ' + year + '/' + month + '/' + day);
+        console.log('WARNING '.red + 'skip weird day: ' + year + '/' + month + '/' + day);
     }
     else {
         if (options.logSuccesses) {
@@ -84,6 +86,10 @@ Walk.processAlbum = function(album, options) {
     if (!options) throw 'no options';
     if (Walk.reachedMax) return;
 
+    if (StringUtils.containsUrlsAndOtherThingsToFix(album.description())) {
+        console.log('WARNING '.red + 'album %s/%s-%s description needs processing: %s', album.year, album.month, album.day, album.description());
+    }
+
     var xmp = Xmp.albumXmp(album.title(), album.description(), album.summary(), album.exifDate());
     if (options.write) {
         FileUtils.writeFile(album.targetYearDir(), album.xmpFilename(), xmp, options);
@@ -102,10 +108,10 @@ Walk.processPhoto = function(photo, options) {
     if (Walk.reachedMax) return;
 
     if (!photo.isKnownImageType()) {
-        console.log('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
+        console.log('WARNING '.red + 'skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
     }
     else if (photo.noJsonData()) {
-        console.log('skip (no json): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+        console.log('WARNING '.red + 'skip (no json): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
     }
     // It's a jpg or bmp, with JSON data
     // It's valid to be transferred
@@ -113,6 +119,11 @@ Walk.processPhoto = function(photo, options) {
         if (options.logSuccesses) {
             console.log('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
         }
+
+        if (StringUtils.containsUrlsAndOtherThingsToFix(photo.description())) {
+            console.log('WARNING '.red + 'photo %s/%s-%s description needs processing: %s', photo.year, photo.month, photo.day, photo.description());
+        }
+
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
         if (options.write) {
             FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp, options);
@@ -131,7 +142,7 @@ Walk.processPhoto = function(photo, options) {
 	var maxToProcess = options.maxPhotosToProcess ? options.maxPhotosToProcess : 1;
     if (Walk.numProcessed >= maxToProcess) {
         Walk.reachedMax = true;
-        console.log('Reached max # photos to process: ' + maxToProcess);
+        console.log('EXIT'.red + 'Reached max # photos to process: ' + maxToProcess);
     }
 };
 
