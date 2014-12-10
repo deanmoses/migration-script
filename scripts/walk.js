@@ -61,7 +61,11 @@ Walk.day = function(year, month, day, options) {
         console.log('skip weird day: ' + year + '/' + month + '/' + day);
     }
     else {
-        AlbumStore.get(year, month, day, function(album) {
+        if (options.logSuccesses) {
+            console.log('processing: %s/%s/%s', year, month, day);
+        }
+
+        AlbumStore.get(year, month, day, options, function(album) {
             Walk.processAlbum(album, options);
 
             // for each photo in week
@@ -80,13 +84,9 @@ Walk.processAlbum = function(album, options) {
     if (!options) throw 'no options';
     if (Walk.reachedMax) return;
 
-    if (options.logSuccesses) {
-        console.log('processing: %s/%s/%s', album.year, album.month, album.day);
-    }
-
     var xmp = Xmp.albumXmp(album.title(), album.description(), album.summary(), album.exifDate());
     if (options.write) {
-        FileUtils.writeFile(album.targetYearDir(), album.xmpFilename(), xmp);
+        FileUtils.writeFile(album.targetYearDir(), album.xmpFilename(), xmp, options);
     }
     else if (options.logSuccesses) {
         console.log('Would have written album: %s/%s-%s', album.year, album.month, album.day);
@@ -113,13 +113,12 @@ Walk.processPhoto = function(photo, options) {
         if (options.logSuccesses) {
             console.log('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
         }
-        //console.log('exif date: ', photo.exifDate());
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
         if (options.write) {
-            FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp);
+            FileUtils.writeFile(photo.targetDir(), photo.xmpFilename(), xmp, options);
 
             // copy the actual image over
-            FileUtils.copyFile(photo.sourceFile(), photo.targetDir(), photo.targetFilename());
+            FileUtils.copyFile(photo.sourceFile(), photo.targetDir(), photo.targetFilename(), options);
         }
         else if (options.logSuccesses) {
             console.log('Would have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());

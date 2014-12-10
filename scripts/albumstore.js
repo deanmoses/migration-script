@@ -18,7 +18,12 @@ AlbumStore.invalidAlbums = [
     '2007/01-07'
 ];
 
-AlbumStore.get = function(year, month, day, callback) {
+AlbumStore.get = function(year, month, day, options, callback) {
+    if (!year) throw 'no year';
+    if (!month) throw 'no month';
+    if (!day) throw 'no day';
+    if (!options) throw 'no options';
+
     var path = year + '/' + month + '-' + day;
     var albumPath = Config.jsonDirBase + '/' + path + '/album.json';
 
@@ -26,22 +31,25 @@ AlbumStore.get = function(year, month, day, callback) {
     try {
         var albumData = JSON.parse(fs.readFileSync(albumPath, 'utf8'));
         var album = new Album(year, month, day, albumData);
+        if (options.logSuccesses) {
+            console.log('\tretrieved album JSON from filesystem: %s', path);
+        }
         callback(album);
     }
     catch(e) {
         // if it's a file not found error
         if (e.code === 'ENOENT') {
-            console.log('album has no JSON on disk: %s/%s-%s', year, month, day);
+            console.log('\talbum has no JSON on disk: %s/%s-%s', year, month, day);
 
             // if it's in Gallery2, attempt to retrieve it
             var isDynamic = year > 2006;
             if (isDynamic) {
                 if (AlbumStore.invalidAlbums.indexOf(path) >= 0) {
-                    console.log('skipping album %s (probably the 500 server error problem)', path);
+                    console.log('\tskipping album %s (probably the 500 server error problem)', path);
                     return;
                 }
                 var url = 'http://tacocat.com/pictures/main.php?g2_view=json.Album&album=' + path;
-                console.log('retrieving album from %s', url);
+                console.log('\tretrieving album JSON from %s', url);
                 http.get(url, function (res) {
                     //console.log('STATUS: ' + res.statusCode);
                     //console.log('HEADERS: ' + JSON.stringify(res.headers));
@@ -58,14 +66,14 @@ AlbumStore.get = function(year, month, day, callback) {
                         // save to disk
                         var albumData = JSON.parse(body);
                         albumData = JSON.stringify(albumData, null, 2);
-                        FileUtils.writeFile(Config.jsonDirBase + '/' + path, 'album.json', albumData);
+                        FileUtils.writeFile(Config.jsonDirBase + '/' + path, 'album.json', albumData, options);
 
                         // read back from disk to verify it wrote correctly
                         albumData = JSON.parse(fs.readFileSync(albumPath, 'utf8'));
                         var album = new Album(year, month, day, albumData);
                         callback(album);
                     });
-                }).on('error', function (e) {
+                }).bind(options).on('error', function (e) {
                     console.log("Got error: " + e.message);
                 });
 

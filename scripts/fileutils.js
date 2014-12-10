@@ -83,25 +83,44 @@ FileUtils.getFiles = function getFiles(srcpath) {
 /**
  * Copy a file from source location to target.
  */
-FileUtils.copyFile = function(source, targetDir, targetFilename) {
+FileUtils.copyFile = function(source, targetDir, targetFilename, options) {
+    if (!source) throw 'no source';
+    if (!targetDir) throw 'no targetDir';
+    if (!targetFilename) throw 'no targetFilename';
+    if (!options) throw 'no options';
+
     var target = targetDir + '/' + targetFilename;
-    if (fs.existsSync(target)) {
-        return;
+    if (!fs.existsSync(target)) {
+        mkdirp.sync(targetDir);
+        fs.writeFileSync(target, fs.readFileSync(source));
+        if (!options || options.logSuccesses) {
+            console.log('\tcopied %s', target);
+        }
     }
-    mkdirp.sync(targetDir);
-    fs.writeFileSync(target, fs.readFileSync(source));
-    console.log('\tcopied %s', target);
+    else if (!options || options.logSuccesses) {
+        console.log('\tnot overwriting: %s', target);
+    }
 };
 
 /**
  * Create file with specified contents.
  */
-FileUtils.writeFile = function(dir, filename, contents) {
+FileUtils.writeFile = function(dir, filename, contents, options) {
+    if (!dir) throw 'no dir';
+    if (!filename) throw 'no filename';
+    if (!contents) throw 'no contents';
+    if (!options) throw 'no options';
+
     var path = dir + '/' + filename;
     if (!fs.existsSync(path)) {
         mkdirp.sync(dir);
         fs.writeFileSync(path, contents);
-        console.log('\twrote %s', path);
+        if (!options || options.logSuccesses) {
+            console.log('\twrote %s', path);
+        }
+    }
+    else if (!options || options.logSuccesses) {
+        console.log('\tnot overwriting: %s', path);
     }
 };
 
