@@ -8,7 +8,7 @@ var options = {
 	maxPhotosToProcess: 200 // maximum # of photos to process before quitting
 };
 
-var year = '2008';
+var year = '2014';
 var month = '12';
 var day = '30';
 
