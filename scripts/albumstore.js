@@ -4,6 +4,7 @@
  * Retrieves JSON albums, either from disk (2001-2006) or from a web service (2007-2014)
  */
 
+var Log = require('./log.js');
 var Config = require('./config.js');
 var Album = require('./album.js');
 var FileUtils = require('./fileutils.js');
@@ -45,7 +46,7 @@ AlbumStore.get = function(year, month, day, options, callback) {
             var isDynamic = year > 2006;
             if (isDynamic) {
                 if (AlbumStore.invalidAlbums.indexOf(path) >= 0) {
-                    console.log('\tskipping album %s (probably the 500 server error problem)', path);
+                    Log.warn('\tskipping album %s (probably the 500 server error problem)', path);
                     return;
                 }
                 var url = 'http://tacocat.com/pictures/main.php?g2_view=json.Album&album=' + path;

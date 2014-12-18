@@ -6,6 +6,7 @@
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var StringUtils = require('./stringutils.js');
+var Log = require('./log.js');
 
 var FileUtils = {};
 
@@ -94,11 +95,11 @@ FileUtils.copyFile = function(source, targetDir, targetFilename, options) {
         mkdirp.sync(targetDir);
         fs.writeFileSync(target, fs.readFileSync(source));
         if (!options || options.logSuccesses) {
-            console.log('\tcopied %s', target);
+            Log.info('\tcopied %s', target);
         }
     }
     else if (!options || options.logSuccesses) {
-        console.log('\tnot overwriting: %s', target);
+        Log.info('\tnot overwriting: %s', target);
     }
 };
 
@@ -116,11 +117,11 @@ FileUtils.writeFile = function(dir, filename, contents, options) {
         mkdirp.sync(dir);
         fs.writeFileSync(path, contents);
         if (!options || options.logSuccesses) {
-            console.log('\twrote %s', path);
+            Log.info('\twrote %s', path);
         }
     }
     else if (!options || options.logSuccesses) {
-        console.log('\tnot overwriting: %s', path);
+        Log.info('\tnot overwriting: %s', path);
     }
 };
 

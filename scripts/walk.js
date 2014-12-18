@@ -5,6 +5,7 @@ var FileUtils = require('./fileutils.js');
 var StringUtils = require('./stringutils.js');
 var AlbumStore = require('./albumstore.js');
 var Xmp = require('./xmp.js');
+var Log = require('./log.js');
 var colors = require('colors');
 
 var Walk = {};
@@ -36,7 +37,7 @@ Walk.month = function(year, month, options) {
     if (Walk.reachedMax) return;
 
     if (!FileUtils.isValidMonth(month)) {
-        console.log('WARNING '.red + 'skip weird month: ' + year + '/' + month);
+        Log.warn('skip weird month: ' + year + '/' + month);
     }
     else {
         // for each week
@@ -57,14 +58,15 @@ Walk.day = function(year, month, day, options) {
     if (Walk.reachedMax) return;
 
     if (!FileUtils.isValidMonth(month)) {
-        console.log('WARNING '.red + 'skip weird month: ' + year + '/' + month);
+        Log.warn('skip weird month: ' + year + '/' + month);
     }
     else if (!FileUtils.isValidDay(day)) {
-        console.log('WARNING '.red + 'skip weird day: ' + year + '/' + month + '/' + day);
+        Log.warn('skip weird day: ' + year + '/' + month + '/' + day);
     }
     else {
         if (options.logSuccesses) {
-            console.log('processing: %s/%s/%s', year, month, day);
+            //console.log('processing: %s/%s/%s', year, month, day);
+            Log.info('processing: %s/%s/%s', year, month, day);
         }
 
         AlbumStore.get(year, month, day, options, function(album) {
@@ -86,8 +88,8 @@ Walk.processAlbum = function(album, options) {
     if (!options) throw 'no options';
     if (Walk.reachedMax) return;
 
-    if (StringUtils.containsUrlsAndOtherThingsToFix(album.description())) {
-        console.log('WARNING '.red + 'album %s/%s-%s description needs processing: %s', album.year, album.month, album.day, album.description());
+    if (options.logDescriptionIssues && StringUtils.containsUrlsAndOtherThingsToFix(album.description())) {
+        Log.warn('album %s/%s-%s description needs processing: %s', album.year, album.month, album.day, album.description());
     }
 
     var xmp = Xmp.albumXmp(album.title(), album.description(), album.summary(), album.exifDate());
@@ -95,7 +97,7 @@ Walk.processAlbum = function(album, options) {
         FileUtils.writeFile(album.targetYearDir(), album.xmpFilename(), xmp, options);
     }
     else if (options.logSuccesses) {
-        console.log('Would have written album: %s/%s-%s', album.year, album.month, album.day);
+        Log.info('Would have written album: %s/%s-%s', album.year, album.month, album.day);
     }
 };
 
@@ -108,20 +110,20 @@ Walk.processPhoto = function(photo, options) {
     if (Walk.reachedMax) return;
 
     if (!photo.isKnownImageType()) {
-        console.log('WARNING '.red + 'skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
+        Log.warn('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
     }
     else if (photo.noJsonData()) {
-        console.log('WARNING '.red + 'skip (no json): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+        Log.warn('skip (no json): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
     }
     // It's a jpg or bmp, with JSON data
     // It's valid to be transferred
     else {
         if (options.logSuccesses) {
-            console.log('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
+            Log.info('processing: %s/%s/%s/%s', photo.year, photo.month, photo.day, photo.filename);
         }
 
-        if (StringUtils.containsUrlsAndOtherThingsToFix(photo.description())) {
-            console.log('WARNING '.red + 'photo %s/%s-%s description needs processing: %s', photo.year, photo.month, photo.day, photo.description());
+        if (options.logDescriptionIssues && StringUtils.containsUrlsAndOtherThingsToFix(photo.description())) {
+            Log.warn('photo %s/%s-%s description needs processing: %s', photo.year, photo.month, photo.day, photo.description());
         }
 
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
@@ -132,7 +134,7 @@ Walk.processPhoto = function(photo, options) {
             FileUtils.copyFile(photo.sourceFile(), photo.targetDir(), photo.targetFilename(), options);
         }
         else if (options.logSuccesses) {
-            console.log('Would have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+            Log.info('Would have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
             //console.log('\ttarget: %s', photo.targetFile());
             //console.log('xmp ', xmp);
         }
