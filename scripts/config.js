@@ -5,8 +5,8 @@
 
 var Config = {};
 
-Config.yearDirBase = '/Volumes/MoBucket/Users/Dean\ Moses/Pictures/raw';
-//Config.yearDirBase = '/Users/moses/Dropbox/Family/Photos/raw/';
+//Config.yearDirBase = '/Volumes/MoBucket/Users/Dean\ Moses/Pictures/raw';
+Config.yearDirBase = '/Users/moses/Dropbox/Family/Photos/raw/';
 
 Config.jsonDirBase = '/Users/moses/devgit/tacocat-gallery-data';
 

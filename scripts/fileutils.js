@@ -94,9 +94,7 @@ FileUtils.copyFile = function(source, targetDir, targetFilename, options) {
     if (!fs.existsSync(target)) {
         mkdirp.sync(targetDir);
         fs.writeFileSync(target, fs.readFileSync(source));
-        if (!options || options.logSuccesses) {
-            Log.info('\tcopied %s', target);
-        }
+        Log.info('\tcopied %s', target);
     }
     else if (!options || options.logSuccesses) {
         Log.info('\tnot overwriting: %s', target);
@@ -116,9 +114,7 @@ FileUtils.writeFile = function(dir, filename, contents, options) {
     if (!fs.existsSync(path)) {
         mkdirp.sync(dir);
         fs.writeFileSync(path, contents);
-        if (!options || options.logSuccesses) {
-            Log.info('\twrote %s', path);
-        }
+        Log.info('\twrote %s', path);
     }
     else if (!options || options.logSuccesses) {
         Log.info('\tnot overwriting: %s', path);

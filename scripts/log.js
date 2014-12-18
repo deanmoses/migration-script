@@ -10,7 +10,7 @@ module.exports = Log;
  */
 Log.info = function(string) {
     if (arguments.length > 0) {
-        arguments[0] = arguments[0].gray.dim.italic;
+        arguments[0] = arguments[0].gray.dim;
         console.log.apply(null, arguments);
     }
 };

@@ -96,6 +96,14 @@ Photo.prototype.date = function() {
     return time;
 };
 
+Photo.prototype.existsOnDisk = function() {
+    return fs.existsSync(this.sourceFile());
+};
+
+Photo.prototype.isDirectory = function() {
+    return fs.lstatSync(this.sourceFile()).isDirectory();
+};
+
 /**
  * True if there is no .txt file with this photo's description
  */

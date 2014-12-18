@@ -68,6 +68,24 @@ Album.prototype.targetYearDir = function() {
 };
 
 /**
+ * For each photo in the album's JSON, call the callback.
+ */
+Album.prototype.forEachPhoto = function(callback) {
+    if (!this.data) {
+        throw 'Album.forEachPhoto(): have no JSON data';
+    }
+
+    if (!this.data.children) {
+        throw 'Album.forEachPhoto(): no children in JSON';
+    }
+
+    this.data.children.forEach(function(childJsonData) {
+        var photo = this.getPhoto(childJsonData.pathComponent);
+        callback(photo);
+    }.bind(this));
+};
+
+/**
  * Get Photo object about a particular photo.
  *
  * @param filename like 'felix.jpg'

@@ -40,7 +40,7 @@ Walk.month = function(year, month, options) {
         Log.warn('skip weird month: ' + year + '/' + month);
     }
     else {
-        // for each week
+        // for each file in month folder
         FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month).forEach(function (day) {
             Walk.day(year, month, day, options);
         });
@@ -72,10 +72,16 @@ Walk.day = function(year, month, day, options) {
         AlbumStore.get(year, month, day, options, function(album) {
             Walk.processAlbum(album, options);
 
-            // for each photo in week
+            // for each file in day folder, check that it has
+            // a corresponding entry in the album and create
+            // the XMP etc
             FileUtils.getFiles(Config.yearDirBase + '/' + year + '/' + month + '/' + day).forEach(function (photoName) {
                 Walk.processPhoto(album.getPhoto(photoName), options);
             });
+
+            // for each entry in album, check that it has a
+            // corresponding file on disk
+
         });
     }
 };
@@ -99,6 +105,15 @@ Walk.processAlbum = function(album, options) {
     else if (options.logSuccesses) {
         Log.info('Would have written album: %s/%s-%s', album.year, album.month, album.day);
     }
+
+    album.forEachPhoto(function(photo) {
+        if (!photo.existsOnDisk()) {
+            Log.warn('Photo not on disk: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+        }
+        else if (photo.isDirectory()) {
+            Log.warn('Photo is dir: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+        }
+    });
 };
 
 /**
@@ -134,7 +149,7 @@ Walk.processPhoto = function(photo, options) {
             FileUtils.copyFile(photo.sourceFile(), photo.targetDir(), photo.targetFilename(), options);
         }
         else if (options.logSuccesses) {
-            Log.info('Would have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+            Log.info('\tWould have written photo: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
             //console.log('\ttarget: %s', photo.targetFile());
             //console.log('xmp ', xmp);
         }

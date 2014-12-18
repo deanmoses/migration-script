@@ -33,7 +33,7 @@ AlbumStore.get = function(year, month, day, options, callback) {
         var albumData = JSON.parse(fs.readFileSync(albumPath, 'utf8'));
         var album = new Album(year, month, day, albumData);
         if (options.logSuccesses) {
-            console.log('\tretrieved album JSON from filesystem: %s', path);
+            Log.info('\tretrieved album JSON from filesystem: %s', path);
         }
         callback(album);
     }
