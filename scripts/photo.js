@@ -64,7 +64,7 @@ Photo.prototype.fileNoExt = function() {
 };
 
 Photo.prototype.xmpFilename = function() {
-    return this.fileNoExt() + '.xmp';
+    return this.fileNoExt().toLowerCase() + '.xmp';
 };
 
 Photo.prototype.xmpFile = function() {

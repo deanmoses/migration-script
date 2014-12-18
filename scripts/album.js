@@ -79,10 +79,20 @@ Album.prototype.forEachPhoto = function(callback) {
         throw 'Album.forEachPhoto(): no children in JSON';
     }
 
-    this.data.children.forEach(function(childJsonData) {
-        var photo = this.getPhoto(childJsonData.pathComponent);
-        callback(photo);
-    }.bind(this));
+    // 2007-2014
+    if (this.isDynamic) {
+        this.data.children.forEach(function(childJsonData) {
+            var photo = this.getPhoto(childJsonData.pathComponent);
+            callback(photo);
+        }.bind(this));
+    }
+    // 2001-2006
+    else {
+        for (var childKey in this.data.children) {
+            var photo = this.getPhoto(this.data.children[childKey].pathComponent);
+            callback(photo);
+        }
+    }
 };
 
 /**
