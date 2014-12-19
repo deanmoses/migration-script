@@ -40,12 +40,16 @@ Photo.prototype.exifDate = function() {
     return d;
 };
 
-Photo.prototype.isKnownImageType = function() {
-    return this.isJpg() || this.isBmp();
+Photo.prototype.isSupportedImageType = function() {
+    return this.isJpg() || this.isPng();
 };
 
 Photo.prototype.isJpg = function() {
     return StringUtils.endsWith(this.targetFilename(), '.jpg');
+};
+
+Photo.prototype.isPng = function() {
+    return StringUtils.endsWith(this.targetFilename(), '.png');
 };
 
 Photo.prototype.isBmp = function() {

@@ -124,7 +124,7 @@ Walk.processPhoto = function(photo, options) {
     if (!options) throw 'no options';
     if (Walk.reachedMax) return;
 
-    if (!photo.isKnownImageType()) {
+    if (!photo.isSupportedImageType()) {
         Log.warn('skip (unhandled extension): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
     }
     else if (photo.noJsonData()) {
@@ -139,6 +139,10 @@ Walk.processPhoto = function(photo, options) {
 
         if (options.logDescriptionIssues && StringUtils.containsUrlsAndOtherThingsToFix(photo.description())) {
             Log.warn('photo %s/%s-%s description needs processing: %s', photo.year, photo.month, photo.day, photo.description());
+        }
+
+        if (photo.isPng()) {
+            Log.warn('photo is png (is this trouble?): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
         }
 
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());
