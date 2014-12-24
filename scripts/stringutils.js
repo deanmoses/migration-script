@@ -5,7 +5,11 @@
 
 var StringUtils = {};
 
-StringUtils.startsWith = function(str, prefix){
+StringUtils.contains = function(haystack, needle) {
+    return haystack.toLowerCase().indexOf(needle) > -1;
+};
+
+StringUtils.startsWith = function(str, prefix) {
     return str.lastIndexOf(prefix, 0) === 0
 };
 

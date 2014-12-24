@@ -41,7 +41,7 @@ Photo.prototype.exifDate = function() {
 };
 
 Photo.prototype.isSupportedImageType = function() {
-    return this.isJpg() || this.isPng();
+    return this.isJpg() || this.isPng() || this.isTif();
 };
 
 Photo.prototype.isJpg = function() {
@@ -50,6 +50,10 @@ Photo.prototype.isJpg = function() {
 
 Photo.prototype.isPng = function() {
     return StringUtils.endsWith(this.targetFilename(), '.png');
+};
+
+Photo.prototype.isTif = function() {
+    return StringUtils.endsWith(this.targetFilename(), '.tif');
 };
 
 Photo.prototype.isBmp = function() {

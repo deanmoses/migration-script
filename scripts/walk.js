@@ -40,7 +40,7 @@ Walk.month = function(year, month, options) {
         Log.warn('skip weird month: ' + year + '/' + month);
     }
     else {
-        // for each file in month folder
+        // for each dir in month folder
         FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month).forEach(function (day) {
             Walk.day(year, month, day, options);
         });
@@ -79,9 +79,12 @@ Walk.day = function(year, month, day, options) {
                 Walk.processPhoto(album.getPhoto(photoName), options);
             });
 
-            // for each entry in album, check that it has a
-            // corresponding file on disk
-
+            // for each dir in day folder, see if it's a subalbum and process it
+            FileUtils.getSubDirs(Config.yearDirBase + '/' + year + '/' + month + '/' + day).forEach(function (dirName) {
+                if (!FileUtils.isDirToIgnore(dirName) && options.warnAboutSubfolders) {
+                    Log.warn(year + '/' + month + '/' + day + ' has a subfolder: ' + dirName);
+                }
+            });
         });
     }
 };
@@ -112,6 +115,10 @@ Walk.processAlbum = function(album, options) {
         }
         else if (photo.isDirectory()) {
             Log.warn('Photo is dir: %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.targetFilename());
+
+            AlbumStore.getSub(photo.year, photo.month, photo.day, photo.targetFilename(), options, function(album) {
+                Log.warn('Need to process album %s', album.path);
+            });
         }
     });
 };
@@ -143,6 +150,9 @@ Walk.processPhoto = function(photo, options) {
 
         if (photo.isPng()) {
             Log.warn('photo is png (is this trouble?): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
+        }
+        else if (photo.isTif()) {
+            Log.warn('photo is tif (is this trouble?): %s/%s-%s/%s', photo.year, photo.month, photo.day, photo.filename);
         }
 
         var xmp = Xmp.imageXmp(photo.title(), photo.description(), photo.exifDate());

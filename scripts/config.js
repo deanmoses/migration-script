@@ -11,7 +11,7 @@ Config.yearDirBase = '/Volumes/MoBucket/Users/Dean\ Moses/Pictures/raw';
 Config.jsonDirBase = '/Users/moses/devgit/tacocat-gallery-data';
 
 Config.targetDirBase = '/Users/moses/devgit/albums';
-//Config.targetDirBase = '/Users/moses/Dropbox/Family/Photos/albums/';
+//Config.targetDirBase = '/Users/moses/Dropbox/Family/Photos/albums';
 
 
 module.exports = Config;

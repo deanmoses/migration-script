@@ -36,6 +36,16 @@ FileUtils.isBadFile = function(file) {
     return false;
 };
 
+FileUtils.isDirToIgnore = function(dir) {
+    if (StringUtils.contains(dir, 'not_for_tacocat')) {
+        return true;
+    }
+    else if (StringUtils.contains(dir, 'not-for-tacocat')) {
+        return true;
+    }
+    return false;
+};
+
 FileUtils.validMonths = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 FileUtils.validDays = ['01','02','03','04','05','06','07','08','09','10',
     '11','12','13','14','15','16','17','18','19','20',
