@@ -10,10 +10,10 @@ var options = {
 	maxPhotosToProcess: 2000 // maximum # of photos to process before quitting
 };
 
-var year = '2008';
-var month = '11';
+var year = '2014';
+var month = '12';
 var day = '30';
 
 //Walk.year(year, options);
-//Walk.month(year, month, options);
-Walk.day(year, month, day, options);
+Walk.month(year, month, options);
+//Walk.day(year, month, day, options);
